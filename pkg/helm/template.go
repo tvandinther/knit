@@ -29,15 +29,12 @@ func RunPull(logger *log.Logger, settings *cli.EnvSettings, repository, chartRef
 	}
 	actionConfig.RegistryClient = registryClient
 
-	pullClient := action.NewPullWithOpts(
-		action.WithConfig(actionConfig))
-	// client.RepoURL = ""
+	logger.Println(settings.RepositoryCache)
+	pullClient := action.NewPullWithOpts(action.WithConfig(actionConfig))
 	pullClient.RepoURL = repository
-	pullClient.DestDir = "./"
+	pullClient.DestDir = settings.RepositoryCache
 	pullClient.Settings = settings
 	pullClient.Version = version
-	pullClient.Untar = true
-	pullClient.UntarDir = "./"
 
 	result, err := pullClient.Run(chartRef)
 	if err != nil {
@@ -49,10 +46,17 @@ func RunPull(logger *log.Logger, settings *cli.EnvSettings, repository, chartRef
 	return nil
 }
 
-func RunTemplateNew() error {
-	logger := logging.GetInstance()
+type ChartRef struct {
+	Repository string
+	Name string
+	Version string
+}
 
-	registryClient, err := newRegistryClient(&cli.EnvSettings{}, false)
+func RunTemplate(chartRef *ChartRef) error {
+	logger := logging.GetInstance()
+	settings := cli.New()
+
+	registryClient, err := newRegistryClient(settings, false)
 	if err != nil {
 		return fmt.Errorf("failed to created registry client: %w", err)
 	}
@@ -65,26 +69,25 @@ func RunTemplateNew() error {
 	client := action.NewInstall(&action.Configuration{})
 	client.SetRegistryClient(registryClient)
 	client.DryRun = true
-	client.ReleaseName = "todo"
-	client.Replace = true // TODO: Why?
 	client.ClientOnly = true
+	client.ReleaseName = "todo" // TODO
+	client.KubeVersion = kubeVersion
 	client.APIVersions = chartutil.DefaultVersionSet // TODO: What's this?
 	client.IncludeCRDs = true
-	client.KubeVersion = kubeVersion
 
 	cpo := action.ChartPathOptions{
-		RepoURL: "https://stefanprodan.github.io/podinfo",
-		Version: "6.7.1",
+		RepoURL: chartRef.Repository,
+		Version: chartRef.Version,
 	}
 
 	var chartPath string
 	locateChart := func() {
-		chartPath, err = cpo.LocateChart("podinfo", &cli.EnvSettings{})
+		chartPath, err = cpo.LocateChart(chartRef.Name, settings)
 	}
 
 	locateChart()
 	if err != nil {
-		err := RunPull(logger, &cli.EnvSettings{}, cpo.RepoURL, "podinfo", cpo.Version)
+		err := RunPull(logger, settings, cpo.RepoURL, chartRef.Name, cpo.Version)
 		if err != nil {
 			log.Fatalln(fmt.Errorf("failed to pull chart: ", err))
 			return err
@@ -103,13 +106,7 @@ func RunTemplateNew() error {
 		return err
 	}
 
-	values, err := chartutil.ReadValuesFile(chartPath + "/values.yaml")
-	if err != nil {
-		log.Fatalln(fmt.Errorf("failed to load values: ", err))
-		return err
-	}
-
-	rel, err := client.Run(chart, values)
+	rel, err := client.Run(chart, nil)
 	if err != nil {
 		log.Fatalln(fmt.Errorf("failed to run install: ", err))
 		return err
