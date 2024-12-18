@@ -1,0 +1,4 @@
+vendored/
+kcl.mod
+kcl.mod.lock
+*.k

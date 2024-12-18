@@ -9,9 +9,15 @@ import (
 	_ "kcl-lang.io/kcl-go/pkg/plugin/hello_plugin" // Import the hello plugin
 )
 
-func Render() {
-	yaml := kcl.MustRun("main.k", kcl.WithCode(code)).GetRawYamlResult()
+func Render() error {
+	result, err := kcl.Run("main.k")
+	if err != nil {
+		return err
+	}
+	yaml := result.GetRawYamlResult()
 	fmt.Println(yaml)
+
+	return nil
 }
 
 const code = `
