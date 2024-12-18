@@ -6,7 +6,6 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
-	_ "knit/http"
 	"knit/pkg/render"
 
 	// Import the native API
