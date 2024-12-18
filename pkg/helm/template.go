@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/cli"
@@ -16,45 +17,47 @@ import (
 	"helm.sh/helm/v3/pkg/releaseutil"
 )
 
-func RunPull(logger *log.Logger, settings *cli.EnvSettings, repository, chartRef, version string) error {
+func getChart(chartRef *ChartRef, settings *cli.EnvSettings) (*chart.Chart, error) {
+	logger := logging.GetInstance()
 
-	actionConfig, err := initActionConfig(settings, logger)
-	if err != nil {
-		return fmt.Errorf("failed to init action config: %w", err)
+	cpo := action.ChartPathOptions{
+		RepoURL: chartRef.Repository,
+		Version: chartRef.Version,
 	}
 
-	registryClient, err := newRegistryClient(settings, false)
-	if err != nil {
-		return fmt.Errorf("failed to created registry client: %w", err)
-	}
-	actionConfig.RegistryClient = registryClient
-
-	logger.Println(settings.RepositoryCache)
-	pullClient := action.NewPullWithOpts(action.WithConfig(actionConfig))
-	pullClient.RepoURL = repository
-	pullClient.DestDir = settings.RepositoryCache
-	pullClient.Settings = settings
-	pullClient.Version = version
-
-	result, err := pullClient.Run(chartRef)
-	if err != nil {
-		return fmt.Errorf("failed to pull chart: %w", err)
+	var chartPath string
+	var err error
+	locateChart := func() {
+		chartPath, err = cpo.LocateChart(chartRef.Name, settings)
 	}
 
-	logger.Printf("%+v", result)
+	locateChart()
+	if err != nil {
+		err := pullChart(logger, settings, chartRef)
+		if err != nil {
+			log.Fatalln(fmt.Errorf("failed to pull chart: ", err))
+			return nil, err
+		}	
 
-	return nil
-}
+		locateChart()
+		if err != nil {
+			log.Fatalln(fmt.Errorf("failed to locate chart: ", err))
+			return nil, err
+		}
+	}
 
-type ChartRef struct {
-	Repository string
-	Name string
-	Version string
+	chart, err := loader.Load(chartPath)
+	if err != nil {
+		log.Fatalln(fmt.Errorf("failed to load chart: ", err))
+		return nil, err
+	}
+
+	return chart, nil
 }
 
 func RunTemplate(chartRef *ChartRef) error {
-	logger := logging.GetInstance()
 	settings := cli.New()
+	chart, err := getChart(chartRef, settings)
 
 	registryClient, err := newRegistryClient(settings, false)
 	if err != nil {
@@ -75,37 +78,6 @@ func RunTemplate(chartRef *ChartRef) error {
 	client.APIVersions = chartutil.DefaultVersionSet // TODO: What's this?
 	client.IncludeCRDs = true
 
-	cpo := action.ChartPathOptions{
-		RepoURL: chartRef.Repository,
-		Version: chartRef.Version,
-	}
-
-	var chartPath string
-	locateChart := func() {
-		chartPath, err = cpo.LocateChart(chartRef.Name, settings)
-	}
-
-	locateChart()
-	if err != nil {
-		err := RunPull(logger, settings, cpo.RepoURL, chartRef.Name, cpo.Version)
-		if err != nil {
-			log.Fatalln(fmt.Errorf("failed to pull chart: ", err))
-			return err
-		}	
-
-		locateChart()
-		if err != nil {
-			log.Fatalln(fmt.Errorf("failed to locate chart: ", err))
-			return err
-		}
-	}
-
-	chart, err := loader.Load(chartPath)
-	if err != nil {
-		log.Fatalln(fmt.Errorf("failed to load chart: ", err))
-		return err
-	}
-
 	rel, err := client.Run(chart, nil)
 	if err != nil {
 		log.Fatalln(fmt.Errorf("failed to run install: ", err))
@@ -116,12 +88,12 @@ func RunTemplate(chartRef *ChartRef) error {
 		return fmt.Errorf("nil release")
 	}
 
-	print(rel)
+	printRelease(rel)
 	
 	return nil
 }
 
-func print(rel *release.Release) {
+func printRelease(rel *release.Release) {
 	if rel != nil {
 		var manifests bytes.Buffer
 		fmt.Fprintln(&manifests, strings.TrimSpace(rel.Manifest))
