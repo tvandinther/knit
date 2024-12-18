@@ -1,6 +1,6 @@
-- [ ] Write the intermediate "values.json" schema file into a temporary location and subsequently remove it.
-- [ ] Implement helm render chart KCL plugin
+- [x] ~~Write the intermediate "values.json" schema file into a temporary location and subsequently remove it.~~
 - [ ] Wire up the CLI options and arguments
+- [ ] Implement helm render chart KCL plugin
 - [ ] Write command descriptions
 - [ ] A resolution to schema defaults: https://github.com/kcl-lang/kcl/issues/1794
 - [ ] Flesh out README
