@@ -50,8 +50,6 @@ func getValues(chartRef *ChartRef) error {
 		return err
 	}
 
-	// TODO: Convert yaml data into a yaml AST with comments included and relate lines of config with comments by building up a JSON schema for KCL to import as a KCL schema (https://pkg.go.dev/kcl-lang.io/kcl-go@v0.10.8/pkg/tools/gen#GenKcl)
-
 	var root yaml.Node
 	err = yaml.Unmarshal(valuesFile.Data, &root)
 	if err != nil {
@@ -75,11 +73,15 @@ func getValues(chartRef *ChartRef) error {
 	if err != nil {
 		return err
 	}
-	valuesSchemaFile, err := os.CreateTemp("", fmt.Sprintf("knit.values.%s-%s_", chartRef.Name, chartRef.Version))
+	tmpDir, err := os.MkdirTemp("", fmt.Sprintf("knit.values.%s-%s_", chartRef.Name, chartRef.Version))
 	if err != nil {
 		return err
 	}
-	defer os.Remove(valuesSchemaFile.Name())
+	defer os.RemoveAll(tmpDir)
+	valuesSchemaFile, err := os.Create(path.Join(tmpDir, "values.json"))
+	if err != nil {
+		return err
+	}
 
 	valuesSchemaFile.Write(schemaJSON)
 
@@ -94,6 +96,13 @@ func getValues(chartRef *ChartRef) error {
 		return err
 	}
 	gen.GenKcl(f, valuesSchemaFile.Name(), nil, &gen.GenKclOptions{Mode: gen.ModeJsonSchema})
+
+	filepath = path.Join(directory, "chart.k")
+	f, err = os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(f, chartFileContent, chartRef.Repository, chartRef.Repository, chartRef.Name, chartRef.Name, chartRef.Version, chartRef.Version)
 
 	return nil
 }
