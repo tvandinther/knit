@@ -10,11 +10,15 @@ type JsonSchema struct {
 	Description string                 `json:"description,omitempty"`
 	Properties  map[string]*JsonSchema `json:"properties,omitempty"`
 	Items       *JsonSchema            `json:"items,omitempty"`
+	Required    []string			   `json:"required,omitempty"`
 }
 
 func ValuesNodeToJsonSchema(root *ValuesNode) (*JsonSchema, error) {
 	return toJSONSchema(root)
 }
+
+var emptyObject = map[string]any{}
+var emptyArray = []any{}
 
 func toJSONSchema(node *ValuesNode) (*JsonSchema, error) {
 	nodeType, err := mapTypeToSchema(node.Type)
@@ -31,12 +35,18 @@ func toJSONSchema(node *ValuesNode) (*JsonSchema, error) {
 	switch node.Type {
 	case TypeObject:
 		schema.Properties = make(map[string]*JsonSchema)
+		if node.SubNodes == nil {
+			schema.Default = emptyObject
+		}
 		for _, child := range node.SubNodes {
 			s, err := toJSONSchema(child)
 			if err != nil {
 				return nil, fmt.Errorf("Could not convert values to json schema", err)
 			}
 			schema.Properties[child.Name] = s
+			if s.Default != nil {
+				schema.Required = append(schema.Required, child.Name)
+			}
 		}
 	case TypeArray:
 		// Assuming all items in the array have the same schema
@@ -48,6 +58,7 @@ func toJSONSchema(node *ValuesNode) (*JsonSchema, error) {
 			schema.Items = s
 		} else {
 			schema.Items = &JsonSchema{}
+			schema.Default = emptyArray
 		}
 	}
 
