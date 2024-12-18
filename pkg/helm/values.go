@@ -3,6 +3,7 @@ package helm
 import (
 	"encoding/json"
 	"fmt"
+	"knit/pkg/util"
 	"os"
 	"path"
 	"strings"
@@ -73,12 +74,12 @@ func getValues(chartRef *ChartRef) error {
 	if err != nil {
 		return err
 	}
-	tmpDir, err := os.MkdirTemp("", fmt.Sprintf("knit.values.%s-%s_", chartRef.Name, chartRef.Version))
+	tmpDir, err := util.NewTempDir(fmt.Sprintf("values.%s-%s_", chartRef.Name, chartRef.Version))
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(tmpDir)
-	valuesSchemaFile, err := os.Create(path.Join(tmpDir, "values.json"))
+	defer tmpDir.Remove()
+	valuesSchemaFile, err := tmpDir.CreateFile("values.json")
 	if err != nil {
 		return err
 	}
