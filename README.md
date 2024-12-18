@@ -17,3 +17,16 @@ knit also incorporates **git** to take the hassle out of automating git actions 
 ```sh
 knit add helm https://stefanprodan.github.io/podinfo podinfo --version 6.7.1
 ```
+
+`main.k`
+```kcl
+import vendored.helm.podinfo
+import kcl_plugin.helm
+
+[manifest for manifest in helm.template(podinfo.Chart{})]
+
+```
+
+```sh
+knit render
+```
