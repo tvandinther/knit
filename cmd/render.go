@@ -24,7 +24,11 @@ Examples:
 	knit render
 	
 	# Renders 'dev.k' as YAML to stdout
-	knit render dev.k`,
+	knit render dev.k
+	
+	# You can also render from the top level command
+	knit
+	knit dev.k`,
 	Args: cobra.RangeArgs(0, 1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		filepath := argsGet(args, 0)

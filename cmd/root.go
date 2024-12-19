@@ -17,6 +17,7 @@ var rootCmd = &cobra.Command{
 	Version: fmt.Sprintf("%s #%s", util.GetVersion(), util.GetShortHash()),
 	Short:   "Knits together kubernetes manifests using KCL",
 	Long: `knit helps you to create kubernetes manifests from various sources and produce them as rendered artifacts to easily enable the rendered manifests pattern using KCL.
+'knit' is also an alias to 'knit render' when no valid commands are given.
 
 Examples:
 	# Initialises a project versioned as 1.0.0
@@ -26,8 +27,10 @@ Examples:
 	knit add helm https://stefanprodan.github.io/podinfo podinfo --version 6.7.1
 	
 	# Renders 'main.k' as YAML to stdout
-	knit render`,
-	Args: renderCmd.Args,
+	knit render
+	knit # When no valid commands are given, render is executed as an alias`,
+	Args:    renderCmd.Args,
+	Aliases: []string{"render"},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return renderCmd.RunE(cmd, args)
 	},
@@ -41,7 +44,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
 }
 
 func argsGet(a []string, n int) string {
