@@ -14,7 +14,7 @@ pkgs.mkShell {
   ];
 
   shellHook = ''
-    export PATH=$(pwd)/scripts:$PATH
+    export PATH=$(pwd)/scripts:$(pwd)/build:$PATH
   '';
 }
 
