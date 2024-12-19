@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"knit/pkg/util"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/cli"
+	"kcl-lang.io/kcl-go"
 	"kcl-lang.io/kcl-go/pkg/tools/gen"
 )
 
@@ -86,24 +87,28 @@ func getValues(chartRef *ChartRef) error {
 
 	valuesSchemaFile.Write(schemaJSON)
 
-	directory := path.Join("vendored", "helm", "podinfo")
+	directory := filepath.Join("vendored", "helm", "podinfo")
 	err = os.MkdirAll(directory, 0744)
 	if err != nil {
 		return err
 	}
-	filepath := path.Join(directory, "values.k")
-	f, err := os.Create(filepath)
+	valuesFilepath := filepath.Join(directory, "values.k")
+	f, err := os.Create(valuesFilepath)
 	if err != nil {
 		return err
 	}
 	gen.GenKcl(f, valuesSchemaFile.Name(), nil, &gen.GenKclOptions{Mode: gen.ModeJsonSchema})
 
-	filepath = path.Join(directory, "chart.k")
-	f, err = os.Create(filepath)
+	valuesFilepath = filepath.Join(directory, "chart.k")
+	f, err = os.Create(valuesFilepath)
 	if err != nil {
 		return err
 	}
 	fmt.Fprintf(f, chartFileContent, chartRef.Repository, chartRef.Repository, chartRef.Name, chartRef.Name, chartRef.Version, chartRef.Version)
+	_, err = kcl.FormatPath(directory)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

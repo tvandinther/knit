@@ -14,16 +14,25 @@ import (
 
 // renderCmd represents the render command
 var renderCmd = &cobra.Command{
-	Use:   "render",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "render [file]",
+	Short: "Render a KCL file as YAML",
+	Long: `Renders a KCL file as YAML to stdout. 'main.k' in the KCL module root will be rendered unless an argument is given.
+Filepaths are resolved relative to the project root defined by the location of the 'kcl.mod' file if found or relative otherwise.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Examples:
+	# Renders 'main.k' as YAML to stdout
+	knit render
+	
+	# Renders 'dev.k' as YAML to stdout
+	knit render dev.k`,
+	Args: cobra.RangeArgs(0, 1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return render.Render()
+		filepath := argsGet(args, 0)
+		if filepath == "" {
+			filepath = "main.k"
+		}
+
+		return render.Render(filepath)
 	},
 }
 

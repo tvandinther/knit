@@ -16,8 +16,8 @@ var helmCmd = &cobra.Command{
 	Long: `Add a helm chart to your project ready to be imported in a KCL file.
 
 Example:
-
-knit add helm https://stefanprodan.github.io/podinfo podinfo --version 6.7.1
+	# Adds a vendored helm chart to your KCL project
+	knit add helm https://stefanprodan.github.io/podinfo podinfo --version 6.7.1
 
 You can then import the podinfo chart from vendored/helm/podinfo.`,
 	Args: cobra.MatchAll(cobra.ExactArgs(2)),

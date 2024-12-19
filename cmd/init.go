@@ -18,16 +18,16 @@ import (
 )
 
 var initOpts = opt.InitOptions{}
+
 // initCmd represents the init command
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Initialise a project in the current directory",
+	Long: `Initialises a project in the current directory. Running this command will initialise a KCL module just like running 'kcl mod init' would.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Example:
+	# Initialises a project versioned as 1.0.0
+	knit init --version 1.0.0`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return runInit(args)
 	},
