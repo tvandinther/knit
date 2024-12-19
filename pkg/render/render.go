@@ -18,10 +18,6 @@ func Render(file string) error {
 		return err
 	}
 
-	// if moduleRoot == "" {
-
-	// }
-
 	result, err := kcl.Run(filepath.Join(moduleRoot, file))
 	if err != nil {
 		return err

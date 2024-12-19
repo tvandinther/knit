@@ -10,7 +10,7 @@ type JsonSchema struct {
 	Description string                 `json:"description,omitempty"`
 	Properties  map[string]*JsonSchema `json:"properties,omitempty"`
 	Items       *JsonSchema            `json:"items,omitempty"`
-	Required    []string			   `json:"required,omitempty"`
+	Required    []string               `json:"required,omitempty"`
 }
 
 func ValuesNodeToJsonSchema(root *ValuesNode) (*JsonSchema, error) {
@@ -23,9 +23,9 @@ var emptyArray = []any{}
 func toJSONSchema(node *ValuesNode) (*JsonSchema, error) {
 	nodeType, err := mapTypeToSchema(node.Type)
 	if err != nil {
-		return nil, fmt.Errorf("Could not convert values to json schema", err)
+		return nil, fmt.Errorf("could not convert values to json schema: %w", err)
 	}
-	
+
 	schema := &JsonSchema{
 		Type:        nodeType,
 		Default:     node.Value,
@@ -41,7 +41,7 @@ func toJSONSchema(node *ValuesNode) (*JsonSchema, error) {
 		for _, child := range node.SubNodes {
 			s, err := toJSONSchema(child)
 			if err != nil {
-				return nil, fmt.Errorf("Could not convert values to json schema", err)
+				return nil, fmt.Errorf("could not convert values to json schema: %w", err)
 			}
 			schema.Properties[child.Name] = s
 			if s.Default != nil {
@@ -53,7 +53,7 @@ func toJSONSchema(node *ValuesNode) (*JsonSchema, error) {
 		if len(node.SubNodes) > 0 {
 			s, err := toJSONSchema(node.SubNodes[0])
 			if err != nil {
-				return nil, fmt.Errorf("Could not convert values to json schema", err)
+				return nil, fmt.Errorf("could not convert values to json schema: %w", err)
 			}
 			schema.Items = s
 		} else {
@@ -82,6 +82,6 @@ func mapTypeToSchema(t JSONType) (string, error) {
 	case TypeObject:
 		return "object", nil
 	default:
-		return "", fmt.Errorf("Could not map type to schema. Possible partial mapping")
+		return "", fmt.Errorf("could not map type to schema. Possible partial mapping")
 	}
 }
