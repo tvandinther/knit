@@ -1,30 +1,34 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
 	"knit/pkg/helm"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
 
-// helmCmd represents the helm command
-var helmCmd = &cobra.Command{
-	Use:   "helm",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+var (
+	version   string
+	directory string
+)
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+var helmCmd = &cobra.Command{
+	Use:   "helm [repository] [name]",
+	Short: "Adds a helm chart to your project",
+	Long: `Add a helm chart to your project ready to be imported in a KCL file.
+
+Example:
+	# Adds a vendored helm chart to your KCL project
+	knit add helm https://stefanprodan.github.io/podinfo podinfo --version 6.7.1
+
+You can then import the podinfo chart from vendored/helm/podinfo.`,
+	Args: cobra.MatchAll(cobra.ExactArgs(2)),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		err := helm.RunValues(&helm.ChartRef{
-			Repository: "https://stefanprodan.github.io/podinfo",
-			Name: "podinfo",
-			Version: "6.7.1",
-		})
+		err := helm.Import(&helm.ChartRef{
+			Repository: argsGet(args, 0),
+			Name:       argsGet(args, 1),
+			Version:    version,
+		}, directory)
 		return err
 	},
 }
@@ -32,13 +36,7 @@ to quickly create a Cobra application.`,
 func init() {
 	addCmd.AddCommand(helmCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// helmCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// helmCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	helmCmd.Flags().StringVarP(&version, "version", "v", "", "version of the helm chart")
+	helmCmd.MarkFlagRequired("version")
+	helmCmd.Flags().StringVar(&directory, "dir", filepath.Join("vendored", "helm"), "directory to add helm chart configuration")
 }

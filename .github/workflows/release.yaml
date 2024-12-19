@@ -1,0 +1,96 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  check-artifacts:
+    name: Check for Build Artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check for Artifacts (AMD64)
+        id: check_amd64
+        uses: actions/download-artifact@v3
+        with:
+          name: knit-amd64
+        continue-on-error: true
+
+      - name: Check for Artifacts (ARM64)
+        id: check_arm64
+        uses: actions/download-artifact@v3
+        with:
+          name: knit-arm64
+        continue-on-error: true
+
+      - name: Set Build Required
+        run: |
+          echo "BUILD_REQUIRED=false" >> $GITHUB_ENV
+          if [[ -z "${{ steps.check_amd64.outcome }}" || -z "${{ steps.check_arm64.outcome }}" ]]; then
+            echo "BUILD_REQUIRED=true" >> $GITHUB_ENV
+          fi
+
+  invoke-build:
+    name: Trigger Build Workflow
+    needs: check-artifacts
+    if: env.BUILD_REQUIRED == 'true'
+    uses: ./.github/workflows/build.yaml
+    with:
+      tag: ${{ github.ref_name }}
+
+  release:
+    name: Create Release
+    needs: [check-artifacts, invoke-build]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Build Artifacts (AMD64)
+        uses: actions/download-artifact@v3
+        with:
+          name: knit-amd64
+          path: dist/
+
+      - name: Download Build Artifacts (ARM64)
+        uses: actions/download-artifact@v3
+        with:
+          name: knit-arm64
+          path: dist/
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          body: |
+            ## Changelog
+            - Built for amd64 and arm64 architectures
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Artifact (AMD64)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/knit-amd64.tar.gz
+          asset_name: knit-amd64.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload Release Artifact (ARM64)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/knit-arm64.tar.gz
+          asset_name: knit-arm64.tar.gz
+          asset_content_type: application/gzip
