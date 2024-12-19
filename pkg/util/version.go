@@ -1,20 +1,27 @@
 package util
 
-var Version string
-var ShortHash string
+var (
+	Version      string
+	ShortHash    string
+	Architecture string
+)
 
 func GetVersion() string {
-	if Version == "" {
-		return "dev"
-	} else {
-		return Version
-	}
+	return stringOrDefault(Version, "dev")
 }
 
 func GetShortHash() string {
-	if ShortHash == "" {
-		return "none"
+	return stringOrDefault(ShortHash, "none")
+}
+
+func GetArchitecture() string {
+	return stringOrDefault(Architecture, "unspecified")
+}
+
+func stringOrDefault(s, d string) string {
+	if s == "" {
+		return d
 	} else {
-		return ShortHash
+		return s
 	}
 }

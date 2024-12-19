@@ -1,6 +1,3 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -11,10 +8,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:     "knit",
-	Version: fmt.Sprintf("%s #%s", util.GetVersion(), util.GetShortHash()),
+	Version: fmt.Sprintf("%s-%s #%s", util.GetVersion(), util.GetArchitecture(), util.GetShortHash()),
 	Short:   "Knits together kubernetes manifests using KCL",
 	Long: `knit helps you to create kubernetes manifests from various sources and produce them as rendered artifacts to easily enable the rendered manifests pattern using KCL.
 'knit' is also an alias to 'knit render' when no valid commands are given.
