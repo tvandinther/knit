@@ -6,8 +6,7 @@ import (
 	_ "knit/pkg/plugin"
 	"knit/pkg/util"
 
-	"kcl-lang.io/kcl-go/pkg/kcl"                   // Import the native API
-	_ "kcl-lang.io/kcl-go/pkg/plugin/hello_plugin" // Import the hello plugin
+	"kcl-lang.io/kcl-go/pkg/kcl"
 
 	"path/filepath"
 )
