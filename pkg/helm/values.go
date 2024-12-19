@@ -35,11 +35,7 @@ type ValuesNode struct {
 	SubNodes []*ValuesNode
 }
 
-func RunValues(chartRef *ChartRef) error {
-	return getValues(chartRef)
-}
-
-func getValues(chartRef *ChartRef) error {
+func getValues(chartRef *ChartRef, directory string) error {
 	settings := cli.New()
 
 	chart, err := getChart(chartRef, settings)
@@ -87,25 +83,25 @@ func getValues(chartRef *ChartRef) error {
 
 	valuesSchemaFile.Write(schemaJSON)
 
-	directory := filepath.Join("vendored", "helm", "podinfo")
-	err = os.MkdirAll(directory, 0744)
+	chartDirectory := filepath.Join(directory, chart.Metadata.Name)
+	err = os.MkdirAll(chartDirectory, 0744)
 	if err != nil {
 		return err
 	}
-	valuesFilepath := filepath.Join(directory, "values.k")
+	valuesFilepath := filepath.Join(chartDirectory, "values.k")
 	f, err := os.Create(valuesFilepath)
 	if err != nil {
 		return err
 	}
 	gen.GenKcl(f, valuesSchemaFile.Name(), nil, &gen.GenKclOptions{Mode: gen.ModeJsonSchema})
 
-	valuesFilepath = filepath.Join(directory, "chart.k")
+	valuesFilepath = filepath.Join(chartDirectory, "chart.k")
 	f, err = os.Create(valuesFilepath)
 	if err != nil {
 		return err
 	}
 	fmt.Fprintf(f, chartFileContent, chartRef.Repository, chartRef.Repository, chartRef.Name, chartRef.Name, chartRef.Version, chartRef.Version)
-	_, err = kcl.FormatPath(directory)
+	_, err = kcl.FormatPath(chartDirectory)
 	if err != nil {
 		return err
 	}

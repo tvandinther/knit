@@ -2,12 +2,14 @@ package cmd
 
 import (
 	"knit/pkg/helm"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
 
 var (
-	version string
+	version   string
+	directory string
 )
 
 var helmCmd = &cobra.Command{
@@ -22,11 +24,11 @@ Example:
 You can then import the podinfo chart from vendored/helm/podinfo.`,
 	Args: cobra.MatchAll(cobra.ExactArgs(2)),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		err := helm.RunValues(&helm.ChartRef{
+		err := helm.Import(&helm.ChartRef{
 			Repository: argsGet(args, 0),
 			Name:       argsGet(args, 1),
 			Version:    version,
-		})
+		}, directory)
 		return err
 	},
 }
@@ -36,4 +38,5 @@ func init() {
 
 	helmCmd.Flags().StringVarP(&version, "version", "v", "", "version of the helm chart")
 	helmCmd.MarkFlagRequired("version")
+	helmCmd.Flags().StringVar(&directory, "dir", filepath.Join("vendored", "helm"), "directory to add helm chart configuration")
 }
