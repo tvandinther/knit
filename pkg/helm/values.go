@@ -1,18 +1,12 @@
 package helm
 
 import (
-	"encoding/json"
 	"fmt"
-	"knit/pkg/util"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/cli"
-	"kcl-lang.io/kcl-go"
-	"kcl-lang.io/kcl-go/pkg/tools/gen"
 )
 
 type JSONType int
@@ -35,78 +29,35 @@ type ValuesNode struct {
 	SubNodes []*ValuesNode
 }
 
-func getValues(chartRef *ChartRef, directory string) error {
+func getValues(chartRef *ChartRef) (*ValuesNode, error) {
 	settings := cli.New()
 
 	chart, err := getChart(chartRef, settings)
 	if err != nil {
-		return fmt.Errorf("could not get helm chart: %w", err)
+		return nil, fmt.Errorf("could not get helm chart: %w", err)
 	}
 
 	valuesFile, err := getValuesFile(chart)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var root yaml.Node
 	err = yaml.Unmarshal(valuesFile.Data, &root)
 	if err != nil {
-		return fmt.Errorf("could not unmarshal values yaml: %w", err)
+		return nil, fmt.Errorf("could not unmarshal values yaml: %w", err)
 	}
 
 	if len(root.Content) != 1 {
-		return fmt.Errorf("expecting a single document in values.yaml")
+		return nil, fmt.Errorf("expecting a single document in values.yaml")
 	}
 
 	tree, err := parseYAML(root.Content[0], "root")
 	if err != nil {
-		return fmt.Errorf("could not parse the values yaml document: %w", err)
+		return nil, fmt.Errorf("could not parse the values yaml document: %w", err)
 	}
 
-	schema, err := ValuesNodeToJsonSchema(tree)
-	if err != nil {
-		return err
-	}
-	schemaJSON, err := json.MarshalIndent(schema, "", "  ")
-	if err != nil {
-		return err
-	}
-	tmpDir, err := util.NewTempDir(fmt.Sprintf("values.%s-%s_", chartRef.Name, chartRef.Version))
-	if err != nil {
-		return err
-	}
-	defer tmpDir.Remove()
-	valuesSchemaFile, err := tmpDir.CreateFile("values.json")
-	if err != nil {
-		return err
-	}
-
-	valuesSchemaFile.Write(schemaJSON)
-
-	chartDirectory := filepath.Join(directory, chart.Metadata.Name)
-	err = os.MkdirAll(chartDirectory, 0744)
-	if err != nil {
-		return err
-	}
-	valuesFilepath := filepath.Join(chartDirectory, "values.k")
-	f, err := os.Create(valuesFilepath)
-	if err != nil {
-		return err
-	}
-	gen.GenKcl(f, valuesSchemaFile.Name(), nil, &gen.GenKclOptions{Mode: gen.ModeJsonSchema})
-
-	valuesFilepath = filepath.Join(chartDirectory, "chart.k")
-	f, err = os.Create(valuesFilepath)
-	if err != nil {
-		return err
-	}
-	fmt.Fprintf(f, chartFileContent, chartRef.Repository, chartRef.Repository, chartRef.Name, chartRef.Name, chartRef.Version, chartRef.Version)
-	_, err = kcl.FormatPath(chartDirectory)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return tree, nil
 }
 
 func getValuesFile(chart *chart.Chart) (*chart.File, error) {

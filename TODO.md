@@ -4,5 +4,6 @@
 - [x] Wire up the CLI options and arguments
 - [x] Write command descriptions
 - [ ] A resolution to schema defaults: https://github.com/kcl-lang/kcl/issues/1794
+    - This does not have much impact on the tool as helm renders templates using the defaults in its values.yaml file anyway. Receiving the defaults via KCL will just overwrite the defaults with defaults. Any truly overridden values will be instantiated via the KCL schemas by the user.
 - [ ] Flesh out README
 - [ ] Implement git command management for a (branch + render + stage + commit) pipeline
