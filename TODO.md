@@ -4,4 +4,4 @@
 - [x] Wire up the CLI options and arguments
 - [x] Write command descriptions
 - [x] Flesh out README
-- [ ] Add ReleaseName property to chart
+- [x] Add ReleaseName property to chart
