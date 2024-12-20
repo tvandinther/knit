@@ -8,11 +8,10 @@ import (
 	"helm.sh/helm/v3/pkg/cli"
 )
 
-
 type ChartRef struct {
 	Repository string
-	Name string
-	Version string
+	Name       string
+	Version    string
 }
 
 func pullChart(logger *log.Logger, settings *cli.EnvSettings, chartRef *ChartRef) error {

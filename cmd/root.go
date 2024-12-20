@@ -1,31 +1,37 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
+	"fmt"
+	"knit/pkg/util"
 	"os"
 
 	"github.com/spf13/cobra"
 )
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "knit",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Use:     "knit",
+	Version: fmt.Sprintf("%s-%s #%s", util.GetVersion(), util.GetArchitecture(), util.GetShortHash()),
+	Short:   "Knits together kubernetes manifests using KCL",
+	Long: `knit helps you to create kubernetes manifests from various sources and produce them as rendered artifacts to easily enable the rendered manifests pattern using KCL.
+'knit' is also an alias to 'knit render' when no valid commands are given.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+Examples:
+	# Initialises a project versioned as 1.0.0
+	knit init --version 1.0.0
+	
+	# Adds a vendored helm chart to your KCL project
+	knit add helm https://stefanprodan.github.io/podinfo podinfo --version 6.7.1
+	
+	# Renders 'main.k' as YAML to stdout
+	knit render
+	knit # When no valid commands are given, render is executed as an alias`,
+	Args:    renderCmd.Args,
+	Aliases: []string{"render"},
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return renderCmd.RunE(cmd, args)
+	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -34,15 +40,7 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.knit.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.SetVersionTemplate(fmt.Sprintf("%s\n", rootCmd.Version))
 }
 
 func argsGet(a []string, n int) string {

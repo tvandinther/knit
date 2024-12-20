@@ -1,16 +1,12 @@
 package helm
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
-	"path"
 	"strings"
 
 	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/cli"
-	"kcl-lang.io/kcl-go/pkg/tools/gen"
 )
 
 type JSONType int
@@ -26,70 +22,42 @@ const (
 )
 
 type ValuesNode struct {
-	Type       JSONType
-	Name       string
-	Value      interface{}
-	Comments   string
-	SubNodes   []*ValuesNode
+	Type     JSONType
+	Name     string
+	Value    interface{}
+	Comments string
+	SubNodes []*ValuesNode
 }
 
-func RunValues(chartRef *ChartRef) error {
-	return getValues(chartRef)
-}
-
-func getValues(chartRef *ChartRef) error {
+func getValues(chartRef *ChartRef) (*ValuesNode, error) {
 	settings := cli.New()
 
 	chart, err := getChart(chartRef, settings)
 	if err != nil {
-		return fmt.Errorf("Could not get helm chart", err)
+		return nil, fmt.Errorf("could not get helm chart: %w", err)
 	}
 
 	valuesFile, err := getValuesFile(chart)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	// TODO: Convert yaml data into a yaml AST with comments included and relate lines of config with comments by building up a JSON schema for KCL to import as a KCL schema (https://pkg.go.dev/kcl-lang.io/kcl-go@v0.10.8/pkg/tools/gen#GenKcl)
 
 	var root yaml.Node
 	err = yaml.Unmarshal(valuesFile.Data, &root)
 	if err != nil {
-		return fmt.Errorf("Could not unmarshal values yaml", err)
+		return nil, fmt.Errorf("could not unmarshal values yaml: %w", err)
 	}
 
 	if len(root.Content) != 1 {
-		return fmt.Errorf("Expecting a single document in values.yaml")
+		return nil, fmt.Errorf("expecting a single document in values.yaml")
 	}
 
 	tree, err := parseYAML(root.Content[0], "root")
 	if err != nil {
-		return fmt.Errorf("Could not parse the values yaml document", err)
+		return nil, fmt.Errorf("could not parse the values yaml document: %w", err)
 	}
 
-	schema, err := ValuesNodeToJsonSchema(tree)
-	if err != nil {
-		return err
-	}
-	schemaJSON, err := json.MarshalIndent(schema, "", "  ")
-	if err != nil {
-		return err
-	}
-	os.WriteFile("values.json", schemaJSON, 0644)
-
-	directory := path.Join("vendored", "helm", "podinfo") 
-	err = os.MkdirAll(directory, 0744)
-	if err != nil {
-		return err
-	}
-	filepath := path.Join(directory, "values.k")
-	f, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	gen.GenKcl(f, "values.json", nil, &gen.GenKclOptions{Mode: gen.ModeJsonSchema})
-
-	return nil
+	return tree, nil
 }
 
 func getValuesFile(chart *chart.Chart) (*chart.File, error) {
@@ -99,12 +67,12 @@ func getValuesFile(chart *chart.Chart) (*chart.File, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("Could not find default values.yaml file")
+	return nil, fmt.Errorf("could not find default values.yaml file")
 }
 
 func collectComments(nodes ...*yaml.Node) string {
 	comments := make([]string, 0)
-	
+
 	addComment := func(c string) {
 		if c != "" {
 			s := strings.TrimPrefix(c, "#")
@@ -112,7 +80,7 @@ func collectComments(nodes ...*yaml.Node) string {
 			comments = append(comments, s)
 		}
 	}
-	
+
 	for _, node := range nodes {
 		addComment(node.HeadComment)
 		addComment(node.LineComment)
@@ -124,7 +92,7 @@ func collectComments(nodes ...*yaml.Node) string {
 
 func parseYAML(node *yaml.Node, name string) (*ValuesNode, error) {
 	vNode := &ValuesNode{
-		Name:     name,
+		Name: name,
 	}
 
 	switch node.Kind {
@@ -132,7 +100,7 @@ func parseYAML(node *yaml.Node, name string) (*ValuesNode, error) {
 		err := node.Decode(&vNode.Value)
 		vNode.Comments = collectComments(node)
 		if err != nil {
-			return nil, fmt.Errorf("Could not decode yaml value", err)
+			return nil, fmt.Errorf("could not decode yaml value: %w", err)
 		}
 		switch node.Tag {
 		case "!!str":
@@ -180,4 +148,3 @@ func parseYAML(node *yaml.Node, name string) (*ValuesNode, error) {
 
 	return vNode, nil
 }
-

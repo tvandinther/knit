@@ -3,14 +3,21 @@ package render
 import (
 	"fmt"
 
-	_ "knit/http"
+	_ "knit/pkg/plugin"
+	"knit/pkg/util"
 
-	"kcl-lang.io/kcl-go/pkg/kcl"                   // Import the native API
-	_ "kcl-lang.io/kcl-go/pkg/plugin/hello_plugin" // Import the hello plugin
+	"kcl-lang.io/kcl-go/pkg/kcl"
+
+	"path/filepath"
 )
 
-func Render() error {
-	result, err := kcl.Run("main.k")
+func Render(file string) error {
+	moduleRoot, err := util.FindModuleRoot()
+	if err != nil {
+		return err
+	}
+
+	result, err := kcl.Run(filepath.Join(moduleRoot, file))
 	if err != nil {
 		return err
 	}
@@ -19,12 +26,3 @@ func Render() error {
 
 	return nil
 }
-
-const code = `
-import kcl_plugin.hello
-import kcl_plugin.http
-
-name = "kcl"
-three = hello.add(1,2)  # hello.add is written by Go
-http_status = http.get("https://google.com").status
-`
