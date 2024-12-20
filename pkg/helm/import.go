@@ -76,7 +76,7 @@ _chart = %s.Chart {
     }
 }
 
-manifests = helm.template(_chart)
+manifests.yaml_stream(helm.template(_chart)) 
 `, strings.ReplaceAll(chartDirectory, string(filepath.Separator), "."), filepath.Base(chartDirectory), filepath.Base(chartDirectory))
 
 	return nil

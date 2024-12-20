@@ -3,5 +3,5 @@
 - [x] ~~Implement helm render chart KCL plugin~~
 - [x] Wire up the CLI options and arguments
 - [x] Write command descriptions
-- [ ] Flesh out README
-- [ ] Implement git command management for a (branch + render + stage + commit) pipeline
+- [x] Flesh out README
+- [ ] Add ReleaseName property to chart
