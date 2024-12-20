@@ -40,7 +40,7 @@ func Execute() {
 }
 
 func init() {
-
+	rootCmd.SetVersionTemplate(fmt.Sprintf("%s\n", rootCmd.Version))
 }
 
 func argsGet(a []string, n int) string {
