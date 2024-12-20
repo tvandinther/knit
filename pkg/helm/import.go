@@ -6,6 +6,7 @@ import (
 	"knit/pkg/util"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"kcl-lang.io/kcl-go"
 	"kcl-lang.io/kcl-go/pkg/tools/gen"
@@ -40,7 +41,7 @@ func Import(chartRef *ChartRef, directory string) error {
 
 	valuesSchemaFile.Write(schemaJSON)
 
-	chartDirectory := filepath.Join(directory, chartRef.Name)
+	chartDirectory := filepath.Join(directory, strings.ReplaceAll(chartRef.Name, "-", "_"))
 	err = os.MkdirAll(chartDirectory, 0744)
 	if err != nil {
 		return err
@@ -62,6 +63,21 @@ func Import(chartRef *ChartRef, directory string) error {
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("Helm chart successfully imported to %s\n", chartDirectory)
+	fmt.Printf(`Example usage:
+	
+import %s
+import kcl_plugin.helm
+
+_chart = %s.Chart {
+    values = %s.Values {
+        # Typed Helm values map
+    }
+}
+
+manifests = helm.template(_chart)
+`, strings.ReplaceAll(chartDirectory, string(filepath.Separator), "."), filepath.Base(chartDirectory), filepath.Base(chartDirectory))
 
 	return nil
 }
