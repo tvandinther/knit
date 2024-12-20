@@ -53,7 +53,7 @@ func getChart(chartRef *ChartRef, settings *cli.EnvSettings) (*chart.Chart, erro
 	return chart, nil
 }
 
-func RunTemplate(chartRef *ChartRef, values map[string]interface{}) (*release.Release, error) {
+func RunTemplate(chartRef *ChartRef, values map[string]interface{}, releaseName, namespace string, apiVersions []string) (*release.Release, error) {
 	settings := cli.New()
 	chart, err := getChart(chartRef, settings)
 	if err != nil {
@@ -74,10 +74,16 @@ func RunTemplate(chartRef *ChartRef, values map[string]interface{}) (*release.Re
 	client.SetRegistryClient(registryClient)
 	client.DryRun = true
 	client.ClientOnly = true
-	client.ReleaseName = "todo" // TODO
+	client.ReleaseName = releaseName
+	client.Namespace = namespace
 	client.KubeVersion = kubeVersion
-	client.APIVersions = chartutil.DefaultVersionSet // TODO: What's this?
+	if len(apiVersions) == 0 {
+		client.APIVersions = chartutil.DefaultVersionSet
+	} else {
+		client.APIVersions = apiVersions
+	}
 	client.IncludeCRDs = true
+	client.DisableHooks = true
 
 	rel, err := client.Run(chart, values)
 	if err != nil {

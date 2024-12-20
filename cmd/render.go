@@ -28,7 +28,7 @@ Examples:
 		if filepath == "" {
 			filepath = "main.k"
 		}
-
+		cmd.SilenceUsage = true
 		return render.Render(filepath)
 	},
 }

@@ -9,5 +9,11 @@ schema Chart:
     repository: "%s" = "%s"
     name: "%s" = "%s"
     version: "%s" = "%s"
+    releaseName: str
+    namespace: str = ""
     values: Values = Values{}
+    capabilities?: Capabilities
+
+schema Capabilities:
+    apiVersions?: [str]
 `

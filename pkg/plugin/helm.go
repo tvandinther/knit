@@ -12,10 +12,17 @@ import (
 )
 
 type ChartArg struct {
-	Repository string
-	Name       string
-	Version    string
-	Values     map[string]interface{}
+	Repository   string
+	Name         string
+	Version      string
+	ReleaseName  string
+	Namespace    string
+	Values       map[string]interface{}
+	Capabilities Capabilities
+}
+
+type Capabilities struct {
+	APIVersions []string
 }
 
 func init() {
@@ -35,11 +42,16 @@ func init() {
 					var chart ChartArg
 					util.MapToStruct(chartArgMap, &chart)
 
+					err := validate(&chart)
+					if err != nil {
+						return nil, err
+					}
+
 					release, err := helm.RunTemplate(&helm.ChartRef{
 						Repository: chart.Repository,
 						Name:       chart.Name,
 						Version:    chart.Version,
-					}, chart.Values)
+					}, chart.Values, chart.ReleaseName, chart.Namespace, chart.Capabilities.APIVersions)
 					if err != nil {
 						return nil, err
 					}
@@ -58,6 +70,14 @@ func init() {
 			},
 		},
 	})
+}
+
+func validate(chartArg *ChartArg) error {
+	if len(chartArg.ReleaseName) < 1 {
+		return fmt.Errorf("releaseName must be defined on the chart")
+	}
+
+	return nil
 }
 
 func getCallArgs(p *plugin.MethodArgs, key string, index int) any {

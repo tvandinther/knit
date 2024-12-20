@@ -6,5 +6,11 @@ schema Chart:
     repository: "https://stefanprodan.github.io/podinfo" = "https://stefanprodan.github.io/podinfo"
     name: "podinfo" = "podinfo"
     version: "6.7.1" = "6.7.1"
+    releaseName: str
+    namespace: str = ""
     values: Values = Values {}
+    capabilities?: Capabilities
+
+schema Capabilities:
+    apiVersions?: [str]
 

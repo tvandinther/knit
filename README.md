@@ -41,6 +41,7 @@ import kcl_plugin.helm
 import manifests
 
 _chart = podinfo.Chart {
+    releaseName = "my-app"
     values = podinfo.Values {
         ingress = podinfo.ValuesIngress {
             enabled = True

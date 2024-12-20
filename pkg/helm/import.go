@@ -71,6 +71,7 @@ import %s
 import kcl_plugin.helm
 
 _chart = %s.Chart {
+    releaseName = "my-app"
     values = %s.Values {
         # Typed Helm values map
     }
