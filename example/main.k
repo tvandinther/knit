@@ -1,5 +1,5 @@
 import vendored.helm.podinfo
-import kcl_plugin.helm
+import knit.helm
 import manifests
 
 _chart = podinfo.Chart {

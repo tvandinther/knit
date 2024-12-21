@@ -24,7 +24,7 @@ In `main.k`, try rendering the default chart.
 ```kcl
 # main.k
 import vendored.helm.podinfo
-import kcl_plugin.helm
+import knit.helm
 
 [manifest for manifest in helm.template(podinfo.Chart{})]
 
@@ -37,7 +37,7 @@ knit render
 You can also set values for the helm chart, for example:
 ```kcl
 import vendored.helm.podinfo
-import kcl_plugin.helm
+import knit.helm
 import manifests
 
 _chart = podinfo.Chart {
@@ -61,4 +61,4 @@ You can view this example [here](example/).
 ## Notes
 
 ### KCL Plugins
-KCL plugins only work within KCL VMs where they are explicitly imported. This is done within the `knit render` command which uses the KCL sdk to instantiate a KCL interpreter with the custom plugins. This means that you will encounter errors if using `kcl run` on files which use the custom plugin functions.
+knit uses KCL plugins. These plugins only work within KCL VMs where they are explicitly imported. This is done within the `knit render` command which uses the KCL sdk to instantiate a KCL interpreter with the custom plugins. This means that you will encounter errors if using `kcl run` on files which use the custom plugin functions.
