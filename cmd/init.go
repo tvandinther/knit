@@ -21,6 +21,7 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialise a project in the current directory",
 	Long: `Initialises a project in the current directory. Running this command will initialise a KCL module just like running 'kcl mod init' would.
+Some knit library files are also initialised to help use the featured available in knit.
 
 Example:
 	# Initialises a project versioned as 1.0.0
