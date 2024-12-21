@@ -1,6 +1,7 @@
 package helm
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"knit/pkg/util"
@@ -52,7 +53,16 @@ func Import(chartRef *ChartRef, directory string) error {
 		return err
 	}
 
-	gen.GenKcl(f, valuesSchemaFile.Name(), nil, &gen.GenKclOptions{Mode: gen.ModeJsonSchema})
+	var buf = bytes.NewBuffer([]byte("import knit.helm"))
+	err = gen.GenKcl(buf, valuesSchemaFile.Name(), nil, &gen.GenKclOptions{Mode: gen.ModeJsonSchema})
+	if err != nil {
+		return err
+	}
+	enhancedValuesSchema := strings.Replace(buf.String(), "schema Values:", "schema Values(helm.Values):", 1)
+	_, err = f.Write([]byte(enhancedValuesSchema))
+	if err != nil {
+		return err
+	}
 
 	f, err = os.Create(filepath.Join(chartDirectory, "chart.k"))
 	if err != nil {
@@ -65,20 +75,7 @@ func Import(chartRef *ChartRef, directory string) error {
 	}
 
 	fmt.Printf("Helm chart successfully imported to %s\n", chartDirectory)
-	fmt.Printf(`Example usage:
-	
-import %s
-import kcl_plugin.helm
-
-_chart = %s.Chart {
-    releaseName = "my-app"
-    values = %s.Values {
-        # Typed Helm values map
-    }
-}
-
-manifests.yaml_stream(helm.template(_chart)) 
-`, strings.ReplaceAll(chartDirectory, string(filepath.Separator), "."), filepath.Base(chartDirectory), filepath.Base(chartDirectory))
+	fmt.Printf("To import this chart use: `import %s`\n", strings.ReplaceAll(chartDirectory, string(filepath.Separator), "."))
 
 	return nil
 }

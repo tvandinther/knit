@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"knit/pkg/initialise"
 	"os"
 	"path/filepath"
 
@@ -79,6 +80,11 @@ func runInit(args []string) error {
 		return err
 	}
 	err = cli.InitEmptyPkg(&kclPkg)
+	if err != nil {
+		return err
+	}
+
+	err = initialise.WriteFiles(pkgRootPath)
 	if err != nil {
 		return err
 	}
