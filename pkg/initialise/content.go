@@ -16,7 +16,7 @@ schema Chart:
     name: str
     version: str
     releaseName: str
-    namespace: str
+    namespace: str = ""
     values: Values
     capabilities?: Capabilities
 
@@ -38,7 +38,9 @@ schema Manifest:
     [str]: any
 
 schema ManifestMetadata:
+    [str]: any
     name?: str
+    namespace?: str
     generateName?: str
     labels?: {str: str}
     annotations?: {str: str}

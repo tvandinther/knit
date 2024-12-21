@@ -17,6 +17,10 @@ func WriteFiles(pkgRootPath string) error {
 	if err != nil {
 		return err
 	}
+	err = os.WriteFile(filepath.Join(directory, "kustomize.k"), []byte(kustomizeFileContent), 0644)
+	if err != nil {
+		return err
+	}
 
 	_, err = kcl.FormatPath(directory)
 	if err != nil {
