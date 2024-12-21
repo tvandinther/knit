@@ -9,7 +9,11 @@ import (
 
 func WriteFiles(pkgRootPath string) error {
 	directory := filepath.Join(pkgRootPath, "knit")
-	err := os.WriteFile(filepath.Join(directory, "kubernetes.k"), []byte(kubernetesBaseFileContent), 0644)
+	err := os.MkdirAll(directory, 0744)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(filepath.Join(directory, "kubernetes.k"), []byte(kubernetesBaseFileContent), 0644)
 	if err != nil {
 		return err
 	}
