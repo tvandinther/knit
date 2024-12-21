@@ -9,7 +9,9 @@ schema Manifest:
     metadata: ManifestMetadata
 
 schema ManifestMetadata:
+    [str]: any
     name?: str
+    namespace?: str
     generateName?: str
     labels?: {str:str}
     annotations?: {str:str}
