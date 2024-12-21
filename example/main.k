@@ -13,7 +13,15 @@ _chart = podinfo.Chart {
 }
 
 _manifests = helm.template(_chart)
-_kustomized = kustomize.build({namespace: "team-a", images: [{name: "ghcr.io/stefanprodan/podinfo", newTag: "modified"}]}, _manifests)
 
-# We use the builtin yaml_stream function here because we cannot put a list and a field at the top-level in the same file
+_kustomization = kustomize.Kustomization {
+    namespace = "team-a"
+    images = [{
+        name = "ghcr.io/stefanprodan/podinfo"
+        digest = "sha256:862ca45e61b32392f7941a1bdfdbe5ff8b6899070135f1bdca1c287d0057fc94"
+    }]
+}
+
+_kustomized = kustomize.build(_kustomization, _manifests)
+
 manifests.yaml_stream(_kustomized)

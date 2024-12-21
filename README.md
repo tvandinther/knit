@@ -65,7 +65,15 @@ _manifests = helm.template(_chart)
 You can post-process the helm chart with Kustomize. The kustomization provided does not include resource relative path names. Instead, the resources are given as a list of KCL maps in an additional argument. For example, to set the namespace of all resources and to change the tag of the image you can do the following:
 ```kcl
 # main.k continued...
-_kustomized = kustomize.build({namespace: "team-a", images: [{name: "ghcr.io/stefanprodan/podinfo", newTag: "modified"}]}, _manifests)
+_kustomization = kustomize.Kustomization {
+    namespace = "team-a"
+    images = [{
+        name = "ghcr.io/stefanprodan/podinfo"
+        digest = "sha256:862ca45e61b32392f7941a1bdfdbe5ff8b6899070135f1bdca1c287d0057fc94"
+    }]
+}
+
+_kustomized = kustomize.build(_kustomization, _manifests)
 ```
 
 Then collect the list of manifests into a stream of YAML documents.
