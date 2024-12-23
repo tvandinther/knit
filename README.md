@@ -84,7 +84,7 @@ manifests.yaml_stream(_kustomized)
 
 ```
 
-Finally, run render again and inspect the changes kustomize has made:
+Finally, run render again and inspect the changes Kustomize has made:
 ```sh
 knit render | grep -e "kind:" -e "image:" -e "namespace:"
 ```
@@ -101,7 +101,7 @@ The table below shows the KCL functions available to use from the `knit` module.
 | Import | Function | Description |
 | --- | --- | --- |
 | `import knit.helm` | `helm.template(chart: helm.Chart) -> [kubernetes.Manifest]` | Runs an equivalent of `helm template` on the given chart and returns a list of kubernetes manifests. |
-| `import knit.kustomize` | `kustomize.build(kustomization: kustomize.Kustomization, resources: [{str: any}]) -> [kubernetes.Manifest]` | Runs an equivalent of `kustomize build` with the given base kustomization and resources. |
+| `import knit.kustomize` | `kustomize.build(kustomization: kustomize.Kustomization, resources: [{str: any}]) -> [kubernetes.Manifest]` | Runs an equivalent of `kustomize build` with the given base kustomization and resources. Any resources given in the 2nd argument will be written to YAML and appended to the `resources` of the given kustomization. Keep in mind that the resources defined under `resources` should only be remote resources. Local resources should be first converted to KCL (you can use `kcl import` for this) and provided in the 2nd argument. |
 
 ### Schemas
 The table below shows the KCL schemas available to use from the `knit` module.
@@ -115,12 +115,12 @@ The table below shows the KCL schemas available to use from the `knit` module.
 ## Notes
 
 ### Kustomize
-Mutations offered by Kustomize can often be performed using simple KCL. For example, using the namespace transformer can be done simply using KCL dict unions. The following shows setting the namespace on a list of `Manifests` using both approaches.
+Mutations offered by Kustomize can often be performed using simple KCL. For example, using the namespace transformer can be done simply using KCL dict unions or schema instances. The following shows setting the namespace on a list of `Manifests` using both approaches.
 ```kcl
 # Using Kustomize
 _kustomized = kustomize.build({namespace: "team-a"}, _manifests)
 
-# Using KCL dict unions
+# Using a KCL schema instance
 _kustomized = [m {metadata.namespace = "team-a"} for m in _manifests]
 ```
 More complex transformation may be better off left to Kustomize to perform. You have the freedom to combine the power of both approaches.

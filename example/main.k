@@ -12,9 +12,9 @@ _chart = podinfo.Chart {
     }
 }
 
-_manifests = helm.template(_chart)
+_podinfo = helm.template(_chart)
 
-_kustomization = kustomize.Kustomization {
+_podinfoKustomization = kustomize.Kustomization {
     namespace = "team-a"
     images = [{
         name = "ghcr.io/stefanprodan/podinfo"
@@ -22,6 +22,11 @@ _kustomization = kustomize.Kustomization {
     }]
 }
 
-_kustomized = kustomize.build(_kustomization, _manifests)
+_kustomizedPodinfo = kustomize.build(_podinfoKustomization, _podinfo)
 
-manifests.yaml_stream(_kustomized)
+_argocd = kustomize.build(kustomize.Kustomization {
+    resources = ["https://raw.githubusercontent.com/argoproj/argo-cd/v2.7.2/manifests/install.yaml"]
+}, [])
+
+# Outputs all kustomized podinfo and Argo CD resource manifests
+manifests.yaml_stream(_kustomizedPodinfo + _argocd)

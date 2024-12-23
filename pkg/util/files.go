@@ -7,7 +7,7 @@ import (
 )
 
 type TempDir struct {
-	path string
+	Path string
 }
 
 func NewTempDir(name string) (*TempDir, error) {
@@ -16,11 +16,20 @@ func NewTempDir(name string) (*TempDir, error) {
 		return nil, err
 	}
 
-	return &TempDir{path: path}, nil
+	return &TempDir{Path: path}, nil
+}
+
+func (d *TempDir) CreatePath(path string) (string, error) {
+	newPath := filepath.Join(d.Path, path)
+	err := os.MkdirAll(filepath.Dir(newPath), 0744)
+	if err != nil {
+		return "", err
+	}
+	return newPath, nil
 }
 
 func (d *TempDir) CreateFile(name string) (*os.File, error) {
-	f, err := os.Create(filepath.Join(d.path, name))
+	f, err := os.Create(filepath.Join(d.Path, name))
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +38,7 @@ func (d *TempDir) CreateFile(name string) (*os.File, error) {
 }
 
 func (d *TempDir) Remove() error {
-	return os.Remove(d.path)
+	return os.Remove(d.Path)
 }
 
 func FindFileUpward(filename string, errorNotFound bool) (string, error) {

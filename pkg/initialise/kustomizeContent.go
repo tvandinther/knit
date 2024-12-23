@@ -69,6 +69,8 @@ schema Kustomization:
          PatchesStrategicMerge specifies the relative path to a file containing a strategic merge patch. URLs and globs are not supported
     replicas : [Replicas], optional
         Replicas is a list of (resource name, count) for changing number of replicas for a resources. It will match any group and kind that has a matching name and that is one of: Deployment, ReplicationController, Replicaset, Statefulset.
+    resources : [str], optional
+        Resources specifies relative paths to files holding YAML representations of kubernetes API objects. URLs and globs not supported.
     components : [str], optional
         Components are relative paths or git repository URLs specifying a directory containing a kustomization.yaml file of Kind Component.
     secretGenerator : [SecretArgs], optional
@@ -109,6 +111,7 @@ schema Kustomization:
     patchesJson6902?: [KustomizationPatchesJson6902Items0OneOf0 | KustomizationPatchesJson6902Items0OneOf1 | KustomizationPatchesJson6902Items0OneOf2]
     patchesStrategicMerge?: [str]
     replicas?: [Replicas]
+    resources?: [str]
     components?: [str]
     secretGenerator?: [SecretArgs]
     sortOptions?: KustomizationSortOptionsOneOf0 | KustomizationSortOptionsOneOf1
