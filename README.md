@@ -84,7 +84,7 @@ manifests.yaml_stream(_kustomized)
 
 ```
 
-Finally, run render again and inspect the changes kustomize has made:
+Finally, run render again and inspect the changes Kustomize has made:
 ```sh
 knit render | grep -e "kind:" -e "image:" -e "namespace:"
 ```
