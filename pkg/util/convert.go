@@ -17,3 +17,20 @@ func MapToStruct(m map[string]interface{}, s interface{}) error {
 
 	return nil
 }
+
+func AnySliceToTyped[T any](input any) ([]T, error) {
+	switch x := input.(type) {
+	case []any:
+		var result []T
+		for i, v := range x {
+			elem, ok := v.(T)
+			if !ok {
+				return nil, fmt.Errorf("element %v at index %d is not a string", v, i)
+			}
+			result = append(result, elem)
+		}
+		return result, nil
+	default:
+		return nil, fmt.Errorf("expecting slice")
+	}
+}
