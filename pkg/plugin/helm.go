@@ -2,14 +2,13 @@ package plugin
 
 import (
 	"fmt"
-	"slices"
-	"strings"
 
 	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/releaseutil"
 	"kcl-lang.io/lib/go/plugin"
 
 	"knit/pkg/helm"
+	"knit/pkg/types"
 	"knit/pkg/util"
 )
 
@@ -26,8 +25,6 @@ type ChartArg struct {
 type Capabilities struct {
 	APIVersions []string
 }
-
-type Manifest = map[string]any
 
 func init() {
 	plugin.RegisterPlugin(plugin.Plugin{
@@ -62,44 +59,20 @@ func init() {
 
 					splitManifests := releaseutil.SplitManifests(release.Manifest)
 
-					var manifestSlice []Manifest
+					var manifestSlice []types.Manifest
 					for _, manifestString := range splitManifests {
-						var manifest Manifest
+						var manifest types.Manifest
 						yaml.Unmarshal([]byte(manifestString), &manifest)
 						manifestSlice = append(manifestSlice, manifest)
 					}
 
-					slices.SortFunc(manifestSlice, func(a, b Manifest) int {
-						return sortManifests(a, b,
-							func(x Manifest) string { return x["apiVersion"].(string) },
-							func(x Manifest) string { return x["kind"].(string) },
-							func(x Manifest) string {
-								metadata := x["metadata"].(map[string]any)
-								return metadata["name"].(string)
-							},
-							func(x Manifest) string {
-								metadata := x["metadata"].(map[string]any)
-								return metadata["generateName"].(string)
-							})
-					})
+					util.SortManifests(manifestSlice)
 
 					return &plugin.MethodResult{V: manifestSlice}, nil
 				},
 			},
 		},
 	})
-}
-
-func sortManifests(a, b Manifest, selectors ...func(x Manifest) string) int {
-	var comparator int
-	for _, selector := range selectors {
-		comparator = strings.Compare(selector(a), selector(b))
-		if comparator != 0 {
-			return comparator
-		}
-	}
-
-	return 0
 }
 
 func validate(chartArg *ChartArg) error {
