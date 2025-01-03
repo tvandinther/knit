@@ -11,6 +11,7 @@ jobs:
     with:
       version: ${{ github.ref_name }}
   release:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Determine version
