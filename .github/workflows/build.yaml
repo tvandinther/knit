@@ -48,3 +48,9 @@ jobs:
         run: |
           mkdir -p build/
           GOOS=linux GOARCH=${{ matrix.arch }} scripts/build.sh ${{ inputs.version || github.ref_name }}
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ runner.os }}-${{ matrix.arch }}
+          path: build/*
