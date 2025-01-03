@@ -52,7 +52,7 @@ jobs:
       - name: Package binary
         run: |
           mkdir -p build/tar
-          tar -czvf build/tar/knit-${{ matrix.arch }}-${{ inputs.version }}.tar.gz -C build .
+          tar -czvf build/tar/knit-${{ matrix.arch }}-${{ inputs.version }}.tar.gz -C build knit
 
       - name: Upload binary
         uses: actions/upload-artifact@v4
