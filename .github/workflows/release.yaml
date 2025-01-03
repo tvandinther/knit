@@ -15,10 +15,10 @@ jobs:
           echo "version=${{ github.ref_name }}" >> $GITHUB_OUTPUT
 
       - name: Trigger Build Workflow
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Call Build Workflow
-        uses: ./.github/workflows/build.yml
+        uses: ./.github/workflows/build.yaml
         with:
           version: ${{ steps.version.outputs.version }}
 
