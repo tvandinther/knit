@@ -6,6 +6,10 @@ on:
       - "v*.*.*"
 
 jobs:
+  build:
+    uses: ./.github/workflows/build.yaml
+    with:
+      version: ${{ github.ref_name }}
   release:
     runs-on: ubuntu-latest
     steps:
@@ -16,11 +20,6 @@ jobs:
 
       - name: Trigger Build Workflow
         uses: actions/checkout@v4
-
-      - name: Call Build Workflow
-        uses: ./.github/workflows/build.yaml
-        with:
-          version: ${{ steps.version.outputs.version }}
 
       - name: Download Build Artifacts
         uses: actions/download-artifact@v3
