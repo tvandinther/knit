@@ -41,11 +41,14 @@ func init() {
 					}
 
 					var chart ChartArg
-					util.MapToStruct(chartArgMap, &chart)
-
-					err := validate(&chart)
+					err := util.MapToStruct(chartArgMap, &chart)
 					if err != nil {
-						return nil, err
+						return nil, fmt.Errorf("unable to map chart to struct: %w", err)
+					}
+
+					err = validate(&chart)
+					if err != nil {
+						return nil, fmt.Errorf("invalid chart: %w", err)
 					}
 
 					release, err := helm.RunTemplate(&helm.ChartRef{
@@ -54,16 +57,17 @@ func init() {
 						Version:    chart.Version,
 					}, chart.Values, chart.ReleaseName, chart.Namespace, chart.Capabilities.APIVersions)
 					if err != nil {
-						return nil, err
+						return nil, fmt.Errorf("problem templating helm chart: %w", err)
 					}
 
 					splitManifests := releaseutil.SplitManifests(release.Manifest)
-
 					var manifestSlice []types.Manifest
 					for _, manifestString := range splitManifests {
 						var manifest types.Manifest
 						yaml.Unmarshal([]byte(manifestString), &manifest)
-						manifestSlice = append(manifestSlice, manifest)
+						if len(manifest) > 0 {
+							manifestSlice = append(manifestSlice, manifest)
+						}
 					}
 
 					util.SortManifests(manifestSlice)
