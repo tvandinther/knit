@@ -59,3 +59,12 @@ jobs:
         with:
           name: build-${{ runner.os }}-${{ matrix.arch }}
           path: build/tar/*
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build and Docker image
+        uses: docker/build-push-action@v6.10.0
+        with:
+          context: .
+          push: false
