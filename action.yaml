@@ -6,6 +6,6 @@ inputs:
     required: true
 runs:
   using: "docker"
-  image: "ghcr.io/tvandinther/knit:v0.0.3"
+  image: "docker://ghcr.io/tvandinther/knit:v0.0.3"
   args:
     - ${{ inputs.filepath }}
