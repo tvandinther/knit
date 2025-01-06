@@ -8,7 +8,7 @@ pkgs.mkShell {
     kubernetes-helm
     kcl
     jq
-    yq
+    yq-go
     go
     cobra-cli
   ];
