@@ -26,9 +26,9 @@ jobs:
 
       - name: Check tag
         run: |
-          if git tag -l ${{ steps.input.outputs.version }}; then
+          if [ $(git tag -l ${{ steps.input.outputs.version }}) ]; then
             echo "Tag already exists for release"
-            exit 2
+            exit 1
           else
             echo "Proceeding with release with tag ${{ steps.input.outputs.version }}"
           fi
