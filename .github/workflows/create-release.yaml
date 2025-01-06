@@ -1,0 +1,41 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release"
+        required: true
+        type: string
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse input
+        id: input
+        run: |
+          SEMVER_REGEX="^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(\\-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?(\\+[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?$"
+          [[ ${{ github.event.inputs.version }} =~ $SEMVER_REGEX ]]
+          echo "version=v${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update action
+        run: |
+          yq e -i '.runs.image = "ghcr.io/tvandinther/knit:${{ steps.input.outputs.version }}"' action.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add action.yml
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git commit -m "Update image tag in action.yml to ${{ steps.input.outputs.version }}"
+            git push origin
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Create release tag
+        run: |
+          git tag ${{ steps.input.outputs.version }}
+          git push --tags
