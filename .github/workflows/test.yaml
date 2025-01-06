@@ -15,4 +15,4 @@ jobs:
 
       - uses: ./
         with:
-          filename: ./example/main.k
+          filepath: example/main.k
