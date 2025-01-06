@@ -1,4 +1,4 @@
-name: knit
+name: knit-render
 description: A tool for managing kubernetes manifests with KCL
 inputs:
   filepath:
@@ -8,4 +8,5 @@ runs:
   using: "docker"
   image: "docker://ghcr.io/tvandinther/knit:v0.0.3"
   args:
+    - render
     - ${{ inputs.filepath }}

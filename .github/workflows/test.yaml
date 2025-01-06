@@ -13,6 +13,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - uses: ./
+      - name: Use Action - Render
+        uses: ./
         with:
           filepath: example/main.k
+
+      - name: Check output
+        run: cat rendered/example.yaml

@@ -2,6 +2,8 @@ import vendored.helm.podinfo
 import knit.helm
 import knit.kustomize
 import manifests
+import file
+import yaml
 
 _chart = podinfo.Chart {
     releaseName = "my-app"
@@ -30,3 +32,5 @@ _argocd = kustomize.build(kustomize.Kustomization {
 
 # Outputs all kustomized podinfo and Argo CD resource manifests
 manifests.yaml_stream(_kustomizedPodinfo + _argocd)
+file.mkdir("rendered")
+yaml.dump_all_to_file(_argocd, "rendered/example.yaml")
