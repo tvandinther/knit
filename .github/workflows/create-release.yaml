@@ -22,6 +22,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check tag
+        run: |
+          if git tag -l ${{ steps.input.outputs.version }}; then
+            echo "Tag already exists for release"
+            exit 1
+          fi
+
       - name: Update action
         run: |
           yq e -i '.runs.image = "ghcr.io/tvandinther/knit:${{ steps.input.outputs.version }}"' action.yaml
