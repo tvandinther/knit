@@ -21,6 +21,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ssh-key: ${{ secrets.KNIT_RELEASE_BOT_SSH_KEY }}
 
       - name: Check tag
         run: |
