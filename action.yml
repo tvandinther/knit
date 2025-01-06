@@ -1,0 +1,11 @@
+name: knit
+description: A tool for managing kubernetes manifests with KCL
+inputs:
+  filepath:
+    description: "File to render"
+    required: true
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - ${{ inputs.filepath }}
