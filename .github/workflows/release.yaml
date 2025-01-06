@@ -1,6 +1,12 @@
 name: Release
 
 on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - Create Release
+    types:
+      - completed
   push:
     tags:
       - "v*.*.*"
