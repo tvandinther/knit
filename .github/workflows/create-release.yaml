@@ -24,12 +24,12 @@ jobs:
 
       - name: Update action
         run: |
-          yq e -i '.runs.image = "ghcr.io/tvandinther/knit:${{ steps.input.outputs.version }}"' action.yml
+          yq e -i '.runs.image = "ghcr.io/tvandinther/knit:${{ steps.input.outputs.version }}"' action.yaml
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add action.yml
+          git add action.yaml
           if [[ -n "$(git status --porcelain)" ]]; then
-            git commit -m "Update image tag in action.yml to ${{ steps.input.outputs.version }}"
+            git commit -m "Update image tag in action.yaml to ${{ steps.input.outputs.version }}"
             git push origin
           else
             echo "No changes to commit"
