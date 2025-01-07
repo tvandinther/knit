@@ -16,6 +16,10 @@ knit incorporates **Helm** so that you can leverage existing charts in KCL witho
 
 knit also includes functions to interact with **Kustomize** to enable you to use existing transformations and overlays without requiring a full migration to KCL templating or to empower your KCL code with Kustomize features. Use the `kustomize.build()` function to run a kustomization.
 
+---
+
+> ### [Jump to GitHub Action Documentation](#GitHubAction)
+
 ## Quick Start
 
 Start by initialising a project in a directory. This command creates KCL module files just like `kcl mod init` does.
@@ -92,6 +96,35 @@ knit render | grep -e "kind:" -e "image:" -e "namespace:"
 > The examples above are just minimal examples. Break things up into modules as required and utilise KCL's language features to make things work for you.
 
 You can view this example [here](example/).
+
+<h2 id="GitHubAction">GitHub Action</h2>
+
+A GitHub Action for the `knit render` command is also published to make it easy to generate your manifests in a GitHub Workflow. Below is an example snippet for how you can use it:
+
+```yaml
+name: Render
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test-action:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # runs `knit render clusters/prod.k`
+      - name: knit render
+        uses: tvandinther/knit@v0.0.4
+        with:
+          filepath: clusters/prod.k
+```
+
+> **Tip:** You can utilise KCL's [`file`](https://www.kcl-lang.io/docs/reference/model/file) and [`yaml`](https://www.kcl-lang.io/docs/reference/model/yaml) packages to create organised directories and files for your data. These directories and files will then be available to subsequent steps in your job where you may commit and push them to another repo/branch to help build your rendered manifest workflow.
 
 ## Reference
 
