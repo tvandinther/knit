@@ -83,7 +83,6 @@ func RunTemplate(chartRef *ChartRef, values map[string]interface{}, releaseName,
 		client.APIVersions = apiVersions
 	}
 	client.IncludeCRDs = true
-	client.DisableHooks = true
 
 	rel, err := client.Run(chart, values)
 	if err != nil {
