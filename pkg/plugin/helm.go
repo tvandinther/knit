@@ -70,6 +70,14 @@ func init() {
 						}
 					}
 
+					for _, hook := range release.Hooks {
+						var manifest types.Manifest
+						yaml.Unmarshal([]byte(hook.Manifest), &manifest)
+						if len(manifest) > 0 {
+							manifestSlice = append(manifestSlice, manifest)
+						}
+					}
+
 					util.SortManifests(manifestSlice)
 
 					return &plugin.MethodResult{V: manifestSlice}, nil
