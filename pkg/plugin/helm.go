@@ -61,10 +61,18 @@ func init() {
 					}
 
 					splitManifests := releaseutil.SplitManifests(release.Manifest)
-					var manifestSlice []types.Manifest
+					manifestSlice := make([]types.Manifest, 0, len(splitManifests)+len(release.Hooks))
 					for _, manifestString := range splitManifests {
 						var manifest types.Manifest
 						yaml.Unmarshal([]byte(manifestString), &manifest)
+						if len(manifest) > 0 {
+							manifestSlice = append(manifestSlice, manifest)
+						}
+					}
+
+					for _, hook := range release.Hooks {
+						var manifest types.Manifest
+						yaml.Unmarshal([]byte(hook.Manifest), &manifest)
 						if len(manifest) > 0 {
 							manifestSlice = append(manifestSlice, manifest)
 						}
