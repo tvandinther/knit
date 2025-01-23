@@ -33,7 +33,7 @@ func Import(chartRef *ChartRef, directory string, useSchema bool) error {
 	} else {
 		if useSchema {
 			logger := logging.GetInstance()
-			logger.Println("WARN: Schema not included with helm chart. Parsing schema from default values instead.")
+			logger.Println("WARN: Schema not included with helm chart. Inferring schema from default values instead.")
 		}
 
 		valuesNode, err := getValues(chart)
