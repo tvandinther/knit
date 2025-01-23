@@ -10,6 +10,7 @@ import (
 var (
 	version   string
 	directory string
+	useSchema bool
 )
 
 var helmCmd = &cobra.Command{
@@ -28,7 +29,7 @@ You can then import the podinfo chart from vendored/helm/podinfo.`,
 			Repository: argsGet(args, 0),
 			Name:       argsGet(args, 1),
 			Version:    version,
-		}, directory)
+		}, directory, useSchema)
 		return err
 	},
 }
@@ -39,4 +40,5 @@ func init() {
 	helmCmd.Flags().StringVarP(&version, "version", "v", "", "version of the helm chart")
 	helmCmd.MarkFlagRequired("version")
 	helmCmd.Flags().StringVar(&directory, "dir", filepath.Join("vendored", "helm"), "directory to add helm chart configuration")
+	helmCmd.Flags().BoolVar(&useSchema, "use-schema", false, "if true, attempts to use the values.schema.json included with the helm chart")
 }
