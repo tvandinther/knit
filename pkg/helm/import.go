@@ -4,24 +4,47 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"knit/pkg/logging"
 	"knit/pkg/util"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"helm.sh/helm/v3/pkg/cli"
 	"kcl-lang.io/kcl-go"
 	"kcl-lang.io/kcl-go/pkg/tools/gen"
 )
 
-func Import(chartRef *ChartRef, directory string) error {
-	valuesNode, err := getValues(chartRef)
+func Import(chartRef *ChartRef, directory string, useSchema bool) error {
+	settings := cli.New()
+
+	chart, err := getChart(chartRef, settings)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not get helm chart: %w", err)
 	}
 
-	schema, err := ValuesNodeToJsonSchema(valuesNode)
-	if err != nil {
-		return err
+	var schema *JsonSchema
+
+	if useSchema && len(chart.Schema) > 0 {
+		err = json.Unmarshal(chart.Schema, &schema)
+		if err != nil {
+			return fmt.Errorf("could not parse JSON schema provided with the helm chart. Try adding without using the provided schema.\n%w", err)
+		}
+	} else {
+		if useSchema {
+			logger := logging.GetInstance()
+			logger.Println("WARN: Schema not included with helm chart. Inferring schema from default values instead.")
+		}
+
+		valuesNode, err := getValues(chart)
+		if err != nil {
+			return err
+		}
+
+		schema, err = ValuesNodeToJsonSchema(valuesNode)
+		if err != nil {
+			return err
+		}
 	}
 
 	schemaJSON, err := json.Marshal(schema)

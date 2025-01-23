@@ -6,7 +6,6 @@ import (
 
 	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/chart"
-	"helm.sh/helm/v3/pkg/cli"
 )
 
 type JSONType int
@@ -29,14 +28,7 @@ type ValuesNode struct {
 	SubNodes []*ValuesNode
 }
 
-func getValues(chartRef *ChartRef) (*ValuesNode, error) {
-	settings := cli.New()
-
-	chart, err := getChart(chartRef, settings)
-	if err != nil {
-		return nil, fmt.Errorf("could not get helm chart: %w", err)
-	}
-
+func getValues(chart *chart.Chart) (*ValuesNode, error) {
 	valuesFile, err := getValuesFile(chart)
 	if err != nil {
 		return nil, err

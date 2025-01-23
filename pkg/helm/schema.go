@@ -5,7 +5,7 @@ import (
 )
 
 type JsonSchema struct {
-	Type        string                 `json:"type,omitempty"`
+	Type        interface{}            `json:"type,omitempty"` // Can be string or []string
 	Default     interface{}            `json:"default,omitempty"`
 	Description string                 `json:"description,omitempty"`
 	Properties  map[string]*JsonSchema `json:"properties,omitempty"`
