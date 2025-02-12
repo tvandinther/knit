@@ -5,14 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"knit/pkg/logging"
-	"knit/pkg/util"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"helm.sh/helm/v3/pkg/cli"
 	"kcl-lang.io/kcl-go"
-	"kcl-lang.io/kcl-go/pkg/tools/gen"
 )
 
 func Import(chartRef *ChartRef, directory string, useSchema bool) error {
@@ -47,45 +45,28 @@ func Import(chartRef *ChartRef, directory string, useSchema bool) error {
 		}
 	}
 
-	schemaJSON, err := json.Marshal(schema)
-	if err != nil {
-		return err
-	}
-
-	tmpDir, err := util.NewTempDir(fmt.Sprintf("values.%s-%s_", chartRef.Name, chartRef.Version))
-	if err != nil {
-		return err
-	}
-	defer tmpDir.Remove()
-
-	valuesSchemaFile, err := tmpDir.CreateFile("values.json")
-	if err != nil {
-		return err
-	}
-
-	valuesSchemaFile.Write(schemaJSON)
-
 	chartDirectory := filepath.Join(directory, strings.ReplaceAll(chartRef.Name, "-", "_"))
 	err = os.MkdirAll(chartDirectory, 0744)
 	if err != nil {
 		return err
 	}
 
+	// KEEP THIS
 	f, err := os.Create(filepath.Join(chartDirectory, "values.k"))
 	if err != nil {
 		return err
 	}
+	// ---
 
+	// Refactor into custom file builder
 	var buf = bytes.NewBuffer([]byte("import knit.helm"))
-	err = gen.GenKcl(buf, valuesSchemaFile.Name(), nil, &gen.GenKclOptions{Mode: gen.ModeJsonSchema})
-	if err != nil {
-		return err
-	}
+
 	enhancedValuesSchema := strings.Replace(buf.String(), "schema Values:", "schema Values(helm.Values):", 1)
 	_, err = f.Write([]byte(enhancedValuesSchema))
 	if err != nil {
 		return err
 	}
+	// ---
 
 	f, err = os.Create(filepath.Join(chartDirectory, "chart.k"))
 	if err != nil {
