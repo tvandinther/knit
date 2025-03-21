@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - arm64-build
   workflow_dispatch:
   workflow_call:
     inputs:
@@ -21,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [amd64]
+        arch: [amd64, arm64]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
