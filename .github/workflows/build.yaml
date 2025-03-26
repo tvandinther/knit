@@ -2,8 +2,7 @@ name: Build
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
   workflow_call:
     inputs:
@@ -12,21 +11,18 @@ on:
         type: string
 
 permissions:
-  id-token: write
   contents: read
+  id-token: write
   attestations: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        arch: [amd64]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Go
+      - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -37,47 +33,35 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ matrix.arch }}-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-${{ matrix.arch }}-
+            ${{ runner.os }}-go-
 
-      - name: Cache build artifacts
-        uses: actions/cache@v4
+      - name: Set up QEMU (for multi-arch builds)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install GoReleaser
+        uses: goreleaser/goreleaser-action@v5
         with:
-          path: build/
-          key: build-${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('scripts/build.sh', '**/*.go', '**/*.mod') }}
-          restore-keys: |
-            build-${{ runner.os }}-${{ matrix.arch }}-
+          version: latest
+          install-only: true
 
-      - name: Build binaries
-        run: |
-          mkdir -p build/
-          GOOS=linux GOARCH=${{ matrix.arch }} scripts/build.sh ${{ inputs.version || github.ref_name }}
+      - name: Run GoReleaser (snapshot build with Docker)
+        run: goreleaser release --clean --snapshot --skip-validate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GORELEASER_CURRENT_TAG: ${{ inputs.version || github.ref_name }}
 
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v2
-        with:
-          subject-path: build/knit
-
-      - name: Package binary
-        run: |
-          mkdir -p build/tar
-          tar -czvf build/tar/knit-${{ matrix.arch }}-${{ inputs.version }}.tar.gz -C build knit
-
-      - name: Upload binary
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ runner.os }}-${{ matrix.arch }}
-          path: build/tar/*
+          name: build-artifacts
+          path: dist/
 
-  docker:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Build and Docker image
-        uses: docker/build-push-action@v6.10.0
+      - name: Generate build provenance
+        uses: actions/attest-build-provenance@v2
         with:
-          context: .
-          push: false
+          subject-path: dist/**/*
