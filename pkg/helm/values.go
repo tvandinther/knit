@@ -103,6 +103,8 @@ func parseYAML(node *yaml.Node, name string) (*ValuesNode, error) {
 			vNode.Type = TypeNumber
 		case "!!bool":
 			vNode.Type = TypeBool
+		case "!!timestamp":
+			vNode.Type = TypeString
 		case "!!null":
 			vNode.Type = TypeNull
 		default:
@@ -126,10 +128,10 @@ func parseYAML(node *yaml.Node, name string) (*ValuesNode, error) {
 				return nil, fmt.Errorf("non-scalar key in mapping")
 			}
 			child, err := parseYAML(valueNode, keyNode.Value)
-			child.Comments = collectComments(keyNode, valueNode)
 			if err != nil {
 				return nil, err
 			}
+			child.Comments = collectComments(keyNode, valueNode)
 			vNode.SubNodes = append(vNode.SubNodes, child)
 		}
 	case yaml.AliasNode:
