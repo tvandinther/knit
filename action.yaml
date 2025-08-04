@@ -6,7 +6,7 @@ inputs:
     required: true
 runs:
   using: "docker"
-  image: "docker://ghcr.io/tvandinther/knit:v0.0.6"
+  image: "docker://ghcr.io/tvandinther/knit:v0.0.7"
   args:
     - render
     - ${{ inputs.filepath }}
